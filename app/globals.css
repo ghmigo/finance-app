@@ -1,0 +1,26 @@
+:root {
+  --bg: #0b0f14; --card: #131a22; --line: #223040; --text: #e8eef5; --muted: #8aa0b5;
+  --accent: #4ade80; --danger: #f87171;
+}
+@media (prefers-color-scheme: light) {
+  :root { --bg: #f5f7fa; --card: #ffffff; --line: #dde4ec; --text: #0f1b28; --muted: #5b6f84; --accent: #15803d; --danger: #b91c1c; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, sans-serif; }
+main { max-width: 720px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { margin: 0 0 4px; font-size: 14px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.balance { font-size: 44px; font-weight: 700; margin: 0 0 20px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+.card h2 { margin: 0 0 12px; font-size: 15px; }
+form.add { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+form.add .full { grid-column: 1 / -1; }
+input, select, button { font: inherit; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); width: 100%; }
+button { background: var(--accent); color: #04130a; border: 0; font-weight: 600; cursor: pointer; }
+a.btn { display: inline-block; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); color: var(--text); text-decoration: none; font-size: 14px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+td, th { padding: 8px 4px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.neg { color: var(--danger); } .pos { color: var(--accent); } .muted { color: var(--muted); }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+.bar > i { display: block; height: 100%; background: var(--accent); }
