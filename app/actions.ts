@@ -21,7 +21,7 @@ export async function login(formData: FormData) {
     secure: true,
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: 60 * 60 * 24 * 180,
   });
   revalidatePath("/");
 }

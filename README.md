@@ -57,3 +57,32 @@ One-time setup:
 
 `POST /api/sheets/sync` with the bearer token re-sends every transaction. The script skips IDs it already has,
 so it only fills gaps. The sheet is a mirror: edits made in the sheet do not flow back to the app.
+
+## Easiest setup (iPhone)
+
+### Home Screen app
+
+Open the site in Safari → Share → **Add to Home Screen**. It opens full screen with its own icon and stays
+signed in for 180 days. Tap a place and a category chip, type the amount, save.
+
+### Two-action Shortcut: type one line
+
+`POST /api/quick` with `{ "text": "150 zus coffee" }` and the usual bearer token.
+
+| You type | Saved as |
+|---|---|
+| `150 zus coffee` | spend 150, place Zus Coffee, category from past Zus Coffee entries |
+| `+1500 papa` | money in 1500, place Papa, category allowance |
+| `17 nanay's coke` | spend 17, place Nanay's, note "coke" |
+| `85 mapua jamaica beef` | spend 85, place Mapua, note "jamaica beef" |
+| `99 transport grab` | spend 99, category transport, note "grab" |
+
+Rules: the first number is the amount. `+` (or the word `add`) means money in. Known places match by full name
+or by the start of the first word (`zus`, `burger`). A known category word sets the category. Anything left over
+becomes the note. Add `"dryRun": true` to see how a line would be read without saving it.
+
+The response includes `message` (summary and new balance) for a notification.
+
+Shortcut: **Ask for Input** (Text) → **Get Contents of URL** (`https://<your-app>.vercel.app/api/quick`,
+POST, header `Authorization: Bearer <API_TOKEN>`, JSON body `text` = Provided Input) →
+**Get Dictionary Value** `message` → **Show Notification**.

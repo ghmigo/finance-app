@@ -1,7 +1,9 @@
 import { cookies } from "next/headers";
 import { db, type Tx } from "@/lib/supabase";
 import { safeEqual, sessionValue } from "@/lib/auth";
-import { addTransaction, deleteTransaction, login, logout, setStartingBalance } from "./actions";
+import { buildStats } from "@/lib/stats";
+import { deleteTransaction, login, logout, setStartingBalance } from "./actions";
+import QuickAdd from "./QuickAdd";
 
 export const dynamic = "force-dynamic";
 
@@ -42,9 +44,7 @@ export default async function Home() {
     const p = r.place ?? "(none)";
     places.set(p, (places.get(p) ?? 0) - a);
   }
-  const allPlaces = [...new Set(rows.map((r) => r.place).filter((p): p is string => !!p))].sort((a, b) =>
-    a.localeCompare(b)
-  );
+  const stats = buildStats(rows);
   const top = (m: Map<string, number>) => [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
   const catTop = top(cats);
   const placeTop = top(places);
@@ -63,19 +63,10 @@ export default async function Home() {
 
       <section className="card">
         <h2>Quick add</h2>
-        <form action={addTransaction} className="add">
-          <input name="amount" type="number" step="0.01" min="0" placeholder="Amount" required />
-          <select name="type" defaultValue="spend">
-            <option value="spend">Spend</option>
-            <option value="add">Add money</option>
-          </select>
-          <input name="place" placeholder="Where (pick or type)" list="places" autoComplete="off" />
-          <datalist id="places">{allPlaces.map((p) => <option key={p} value={p} />)}</datalist>
-          <input name="category" placeholder="Category (food, transport…)" list="cats" />
-          <datalist id="cats">{[...cats.keys()].map((c) => <option key={c} value={c} />)}</datalist>
-          <input className="full" name="note" placeholder="Reason / note" />
-          <button className="full" type="submit">Save</button>
-        </form>
+        <QuickAdd
+          places={stats.places.slice(0, 10).map((p) => ({ name: p.name, category: p.spendCategory ?? p.anyCategory }))}
+          categories={stats.categories.slice(0, 10)}
+        />
       </section>
 
       <section className="card">
