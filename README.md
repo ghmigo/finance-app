@@ -40,3 +40,20 @@ Generate a token: `openssl rand -hex 32`
 
 Schema lives in Supabase (`transactions`, `settings`, `balance` view). RLS is on with no
 policies, so only the server-side service key can read or write.
+
+## Google Sheet sync
+
+Every new entry (from the Shortcut or the dashboard) is appended to the "Finance Tracker" sheet's
+`Log` tab within a few seconds. Deleting an entry in the dashboard removes its row too.
+The `Places` tab feeds the dropdown on the Place column, and `Summary` totals everything with formulas.
+
+One-time setup:
+
+1. Open the sheet → Extensions → Apps Script. Replace the contents with `apps-script/Code.gs`.
+2. Project Settings → Script properties → add `SECRET` with a long random value.
+3. Deploy → New deployment → type **Web app**, Execute as **Me**, Who has access **Anyone**. Copy the URL.
+4. In Vercel, add `SHEETS_WEBHOOK_URL` (that URL) and `SHEETS_WEBHOOK_SECRET` (the same value as `SECRET`),
+   then redeploy.
+
+`POST /api/sheets/sync` with the bearer token re-sends every transaction. The script skips IDs it already has,
+so it only fills gaps. The sheet is a mirror: edits made in the sheet do not flow back to the app.

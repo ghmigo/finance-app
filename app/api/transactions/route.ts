@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
-import { db } from "@/lib/supabase";
+import { NextResponse, after } from "next/server";
+import { db, type Tx } from "@/lib/supabase";
 import { hasValidToken } from "@/lib/auth";
+import { pushToSheet, sheetRow } from "@/lib/sheets";
 
 export const dynamic = "force-dynamic";
 
@@ -25,13 +26,18 @@ export async function POST(req: Request) {
   const clean = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
 
   const supabase = db();
-  const { error } = await supabase.from("transactions").insert({
-    amount,
-    place: clean(body.place),
-    category: clean(body.category)?.toLowerCase() ?? "uncategorized",
-    note: clean(body.note),
-  });
+  const { data: row, error } = await supabase
+    .from("transactions")
+    .insert({
+      amount,
+      place: clean(body.place),
+      category: clean(body.category)?.toLowerCase() ?? "uncategorized",
+      note: clean(body.note),
+    })
+    .select()
+    .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  after(() => pushToSheet({ action: "add", ...sheetRow(row as Tx) }));
 
   const { data } = await supabase.from("balance").select("balance").single();
   return NextResponse.json({ ok: true, balance: Number(data?.balance ?? 0) });

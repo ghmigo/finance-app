@@ -2,8 +2,10 @@
 
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { db } from "@/lib/supabase";
+import { after } from "next/server";
+import { db, type Tx } from "@/lib/supabase";
 import { safeEqual, sessionValue } from "@/lib/auth";
+import { pushToSheet, sheetRow } from "@/lib/sheets";
 
 async function requireSession() {
   const s = (await cookies()).get("session")?.value ?? "";
@@ -38,12 +40,17 @@ export async function addTransaction(formData: FormData) {
     const v = String(formData.get(k) ?? "").trim();
     return v || null;
   };
-  await db().from("transactions").insert({
-    amount: raw * type,
-    place: clean("place"),
-    category: clean("category")?.toLowerCase() ?? "uncategorized",
-    note: clean("note"),
-  });
+  const { data: row } = await db()
+    .from("transactions")
+    .insert({
+      amount: raw * type,
+      place: clean("place"),
+      category: clean("category")?.toLowerCase() ?? "uncategorized",
+      note: clean("note"),
+    })
+    .select()
+    .single();
+  if (row) after(() => pushToSheet({ action: "add", ...sheetRow(row as Tx) }));
   revalidatePath("/");
 }
 
@@ -58,6 +65,9 @@ export async function setStartingBalance(formData: FormData) {
 export async function deleteTransaction(formData: FormData) {
   await requireSession();
   const id = String(formData.get("id") ?? "");
-  if (id) await db().from("transactions").delete().eq("id", id);
+  if (id) {
+    const { error } = await db().from("transactions").delete().eq("id", id);
+    if (!error) after(() => pushToSheet({ action: "delete", id }));
+  }
   revalidatePath("/");
 }

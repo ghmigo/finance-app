@@ -42,6 +42,9 @@ export default async function Home() {
     const p = r.place ?? "(none)";
     places.set(p, (places.get(p) ?? 0) - a);
   }
+  const allPlaces = [...new Set(rows.map((r) => r.place).filter((p): p is string => !!p))].sort((a, b) =>
+    a.localeCompare(b)
+  );
   const top = (m: Map<string, number>) => [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
   const catTop = top(cats);
   const placeTop = top(places);
@@ -66,7 +69,8 @@ export default async function Home() {
             <option value="spend">Spend</option>
             <option value="add">Add money</option>
           </select>
-          <input name="place" placeholder="Where (e.g. 7-Eleven)" />
+          <input name="place" placeholder="Where (pick or type)" list="places" autoComplete="off" />
+          <datalist id="places">{allPlaces.map((p) => <option key={p} value={p} />)}</datalist>
           <input name="category" placeholder="Category (food, transport…)" list="cats" />
           <datalist id="cats">{[...cats.keys()].map((c) => <option key={c} value={c} />)}</datalist>
           <input className="full" name="note" placeholder="Reason / note" />
